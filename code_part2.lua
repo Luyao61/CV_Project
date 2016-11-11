@@ -2,20 +2,23 @@ require 'nn'
 require 'cunn'
 require 'cutorch'
 require 'cudnn'
-
+require 'optim'
 
 load_images = require 'load_images'
 torch.setdefaulttensortype('torch.FloatTensor')
 
 -- load train set images
-n_sit_images = 123
+n_sit_images = 1171
 sit_images = load_images.load('sit', n_sit_images)
-n_stand_images = 156
+n_stand_images = 660
 stand_images = load_images.load('stand', n_stand_images)
+n_empty_images = 111
+empty_images = load_images.load('empty', n_empty_images)
+
 trainset = {
-  data = torch.Tensor(n_sit_images + n_stand_images, 3, 320, 240),
-  label = torch.Tensor(n_sit_images + n_stand_images),
-  size = function() return n_sit_images + n_stand_images end
+  data = torch.Tensor(n_sit_images + n_stand_images + n_empty_images, 3, 320, 240),
+  label = torch.Tensor(n_sit_images + n_stand_images + n_empty_images),
+  size = function() return n_sit_images + n_stand_images + n_empty_images end
 }
 
 for i = 1,n_sit_images do
@@ -25,6 +28,10 @@ end
 for i = n_sit_images+1, n_stand_images + n_sit_images do
   trainset.data[i] = stand_images[i-n_sit_images]
   trainset.label[i] = torch.Tensor(1):fill(2)
+end
+for i = n_sit_images+n_stand_images+1, n_stand_images + n_sit_images + n_empty_images do
+  trainset.data[i] = empty_images[i-n_sit_images-n_stand_images]
+  trainset.label[i] = torch.Tensor(1):fill(3)
 end
 
 
@@ -100,18 +107,19 @@ model:cuda()
 parameters,gradParameters = model:getParameters()
 
 
-for epoch = 1,5 do
+for epoch = 1,10 do
 
-  shuffle = torch.randperm(270)
+  shuffle = torch.randperm(1940)
   local f = 0
+  local correct_count = 0
   model:training()
-  for t = 1,200,batchSize do
+  for t = 1,1600,batchSize do
 
-    local inputs = torch.CudaTensor(batchSize,1,128,128)
-    local targets = torch.CudaTensor(batchSize,2,128,128)
+    local inputs = torch.CudaTensor(batchSize,3,320,240)
+    local targets = torch.CudaTensor(batchSize)
     for i = t,t+batchSize-1 do
       local input = trainset.data[shuffle[i]]
-      local target = trainset.labels[shuffle[i]]
+      local target = trainset.label[shuffle[i]]
 
       inputs[i - t + 1] = input
       targets[i - t + 1] = target
@@ -126,6 +134,14 @@ for epoch = 1,5 do
       inputs = inputs:cuda()
       targets = targets:cuda()
       local output = model:forward(inputs)
+      --print(output)
+      for i = 1, output:size(1) do
+          local _, predicted_label = output[i]:max(1)
+--[[            print (predicted_label[1])
+            print (targets[i])
+            print (" ")]]
+          if predicted_label[1] == targets[i] then correct_count = correct_count + 1 end
+      end
       local err = criterion:forward(output, targets)
       f = f + err
       local df_do = criterion:backward(output, targets)
@@ -135,25 +151,35 @@ for epoch = 1,5 do
     end
     optimMethod(feval, parameters, optimState)
   end
-  print(("epoch = %d; train mse = %.6f"):format(epoch,f/6750))
+  print(("epoch = %d; train mse = %.6f; Accuracy = %.3f"):format(epoch,f/1600, correct_count/1600))
 
 
   f=0
+  correct_count = 0
   model:evaluate()
-  for t = 1,70,batchSize do
-    local inputs = torch.CudaTensor(batchSize,1,128,128)
-    local targets = torch.CudaTensor(batchSize,2,128,128)
+  for t = 1,340,batchSize do
+    local inputs = torch.CudaTensor(batchSize,3,320,240)
+    local targets = torch.CudaTensor(batchSize)
     for i = t,t+batchSize-1 do
-      local input = trainset.data[shuffle[200+i]]
-      local target = trainset.labels[shuffle[200+i]]
+      local input = trainset.data[shuffle[1600+i]]
+      local target = trainset.label[shuffle[1600+i]]
       inputs[i - t + 1] = input
       targets[i - t + 1] = target
     end
     inputs = inputs:cuda()
     targets = targets:cuda()
     local output = model:forward(inputs)
+    for i = 1, output:size(1) do
+        local _, predicted_label = output[i]:max(1)
+        --print(i)
+        if predicted_label[1] == targets[i] then correct_count = correct_count + 1 end
+    end
     local err = criterion:forward(output, targets)
     f = f + err
   end
-  print(("epoch = %d; test mse = %.6f"):format(epoch,f/75))
+  print(("epoch = %d; test mse = %.6f; Accuracy = %.3f"):format(epoch,f/340,correct_count/340))
 end
+--[[
+image.display(trainset.data[1])
+output = model:forward(trainset.normdata[1])
+print(output)]]
