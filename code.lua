@@ -26,7 +26,7 @@ for i = n_sit_images+1, n_stand_images + n_sit_images do
   trainset.label[i] = torch.Tensor(1):fill(2)
 end
 -- load valset images
-n_val_sit_images = 716
+n_val_sit_images = 119
 val_sit_images = load_images.load('val_sit', n_val_sit_images)
 n_val_stand_images = 119
 val_stand_images = load_images.load('val_stand', n_val_stand_images)
