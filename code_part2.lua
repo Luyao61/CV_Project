@@ -8,12 +8,13 @@ load_images = require 'load_images'
 torch.setdefaulttensortype('torch.FloatTensor')
 
 -- load train set images
-n_sit_images = 1171
+n_sit_images = 3670
 sit_images = load_images.load('sit', n_sit_images)
-n_stand_images = 660
+n_stand_images = 2910
 stand_images = load_images.load('stand', n_stand_images)
-n_empty_images = 111
+n_empty_images = 3005
 empty_images = load_images.load('empty', n_empty_images)
+
 
 trainset = {
   data = torch.Tensor(n_sit_images + n_stand_images + n_empty_images, 3, 320, 240),
@@ -108,12 +109,11 @@ parameters,gradParameters = model:getParameters()
 
 
 for epoch = 1,10 do
-
-  shuffle = torch.randperm(1940)
+  shuffle = torch.randperm(trainset:size())
   local f = 0
   local correct_count = 0
   model:training()
-  for t = 1,1600,batchSize do
+  for t = 1,8600,batchSize do
 
     local inputs = torch.CudaTensor(batchSize,3,320,240)
     local targets = torch.CudaTensor(batchSize)
@@ -151,18 +151,18 @@ for epoch = 1,10 do
     end
     optimMethod(feval, parameters, optimState)
   end
-  print(("epoch = %d; train mse = %.6f; Accuracy = %.3f"):format(epoch,f/1600, correct_count/1600))
+  print(("epoch = %d; train mse = %.6f; Accuracy = %.3f"):format(epoch,f/8600, correct_count/8600))
 
 
   f=0
   correct_count = 0
   model:evaluate()
-  for t = 1,340,batchSize do
+  for t = 1,985,batchSize do
     local inputs = torch.CudaTensor(batchSize,3,320,240)
     local targets = torch.CudaTensor(batchSize)
     for i = t,t+batchSize-1 do
-      local input = trainset.data[shuffle[1600+i]]
-      local target = trainset.label[shuffle[1600+i]]
+      local input = trainset.data[shuffle[8600+i]]
+      local target = trainset.label[shuffle[8600+i]]
       inputs[i - t + 1] = input
       targets[i - t + 1] = target
     end
@@ -177,7 +177,7 @@ for epoch = 1,10 do
     local err = criterion:forward(output, targets)
     f = f + err
   end
-  print(("epoch = %d; test mse = %.6f; Accuracy = %.3f"):format(epoch,f/340,correct_count/340))
+  print(("epoch = %d; test mse = %.6f; Accuracy = %.3f"):format(epoch,f/985,correct_count/985))
 end
 --[[
 image.display(trainset.data[1])
