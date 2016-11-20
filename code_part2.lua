@@ -14,7 +14,10 @@ n_stand_images = 2910
 stand_images = load_images.load('stand', n_stand_images)
 n_empty_images = 3005
 empty_images = load_images.load('empty', n_empty_images)
+train_size = 8600
+test_size = 985
 
+--
 
 trainset = {
   data = torch.Tensor(n_sit_images + n_stand_images + n_empty_images, 3, 320, 240),
@@ -24,18 +27,20 @@ trainset = {
 
 for i = 1,n_sit_images do
   trainset.data[i] = sit_images[i]
-  trainset.label[i] = torch.Tensor(1):fill(1)
+  trainset.label[i] = 1
 end
 for i = n_sit_images+1, n_stand_images + n_sit_images do
   trainset.data[i] = stand_images[i-n_sit_images]
-  trainset.label[i] = torch.Tensor(1):fill(2)
+  trainset.label[i] = 2
 end
 for i = n_sit_images+n_stand_images+1, n_stand_images + n_sit_images + n_empty_images do
   trainset.data[i] = empty_images[i-n_sit_images-n_stand_images]
-  trainset.label[i] = torch.Tensor(1):fill(3)
+  trainset.label[i] = 3
 end
 
-
+stand_images = nil
+sit_images = nil
+empty_images = nil
 -- preprocess data
 trainset.normdata = trainset.data:clone()
 
@@ -58,6 +63,7 @@ for i =1,3 do
   --valset.normdata[{{}, {i}, {}, {}}]:div(std[i])
 end
 
+print(3)
 
 local model = nn.Sequential()
 local first = nn.Sequential()
@@ -91,7 +97,7 @@ second:add(nn.Dropout(0.5))
 second:add(nn.Linear(4096, 4096))
 --second:add(nn.SpatialBatchNormalization(4096))
 second:add(nn.ReLU())
-second:add(nn.Linear(4096, 2))
+second:add(nn.Linear(4096, 3))
 second:add(nn.LogSoftMax())
 model:add(second)
 
@@ -106,19 +112,19 @@ batchSize = 5
 criterion:cuda()
 model:cuda()
 parameters,gradParameters = model:getParameters()
+print(4)
 
-
-for epoch = 1,10 do
+for epoch = 1,2 do
   shuffle = torch.randperm(trainset:size())
   local f = 0
   local correct_count = 0
   model:training()
-  for t = 1,8600,batchSize do
+  for t = 1,train_size,batchSize do
 
     local inputs = torch.CudaTensor(batchSize,3,320,240)
     local targets = torch.CudaTensor(batchSize)
     for i = t,t+batchSize-1 do
-      local input = trainset.data[shuffle[i]]
+      local input = trainset.normdata[shuffle[i]]
       local target = trainset.label[shuffle[i]]
 
       inputs[i - t + 1] = input
@@ -151,18 +157,18 @@ for epoch = 1,10 do
     end
     optimMethod(feval, parameters, optimState)
   end
-  print(("epoch = %d; train mse = %.6f; Accuracy = %.3f"):format(epoch,f/8600, correct_count/8600))
+  print(("epoch = %d; train mse = %.6f; Accuracy = %.3f"):format(epoch,f/train_size, correct_count/train_size))
 
 
   f=0
   correct_count = 0
   model:evaluate()
-  for t = 1,985,batchSize do
+  for t = 1,test_size,batchSize do
     local inputs = torch.CudaTensor(batchSize,3,320,240)
     local targets = torch.CudaTensor(batchSize)
     for i = t,t+batchSize-1 do
-      local input = trainset.data[shuffle[8600+i]]
-      local target = trainset.label[shuffle[8600+i]]
+      local input = trainset.normdata[shuffle[train_size+i]]
+      local target = trainset.label[shuffle[train_size+i]]
       inputs[i - t + 1] = input
       targets[i - t + 1] = target
     end
@@ -177,9 +183,26 @@ for epoch = 1,10 do
     local err = criterion:forward(output, targets)
     f = f + err
   end
-  print(("epoch = %d; test mse = %.6f; Accuracy = %.3f"):format(epoch,f/985,correct_count/985))
+  print(("epoch = %d; test mse = %.6f; Accuracy = %.3f"):format(epoch,f/test_size,correct_count/test_size))
 end
 --[[
 image.display(trainset.data[1])
 output = model:forward(trainset.normdata[1])
 print(output)]]
+
+test_temp = torch.CudaTensor(5,3,320,240)
+test_temp[1] = image.load("test_temp/empty110.jpg")
+test_temp[2] = image.load("test_temp/sit46.jpg")
+test_temp[3] = image.load("test_temp/sit1765.jpg")
+test_temp[4] = image.load("test_temp/stand1778.jpg")
+test_temp[5] = image.load("test_temp/stand2335.jpg")
+
+test_output = model:forward(test_temp)
+--[[for j = 1,5 do
+  local scores, classIds = test_output[j][1]:exp():sort(true)
+  print(("img %d"):format(j))
+  for i = 1, 3 do
+      print(('[%d] = %.5f'):format(classIds[i], scores[i]))
+  end
+end]]
+print(test_output)
