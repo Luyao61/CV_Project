@@ -36,7 +36,7 @@ criterion:cuda()
 parameters,gradParameters = model:getParameters()
 print("Loda AlexNET model... DONE")
 
-for epoch = 1,2 do
+for epoch = 1,20 do
   shuffle = torch.randperm(trainset:size())
   local f = 0
   local correct_count = 0
@@ -101,12 +101,15 @@ for epoch = 1,2 do
         local _, predicted_label = output[i]:max(1)
         --print(i)
         if predicted_label[1] == targets[i] then correct_count = correct_count + 1 end
+        if(predicted_label[1] == 3) then print("good") end
     end
     local err = criterion:forward(output, targets)
     f = f + err
   end
   print(("epoch = %d; test mse = %.6f; Accuracy = %.3f"):format(epoch,f/test_size,correct_count/test_size))
 end
+torch.save("models/AlexNet_W_epoch20.t7",model)
+
 --[[
 image.display(trainset.data[1])
 output = model:forward(trainset.normdata[1])
