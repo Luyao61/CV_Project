@@ -37,7 +37,6 @@ end
 function module.loadAlexNet(height, width)
   model = torch.load("models/alexnetowtbn_epoch55_cpu.t7")
   model:remove(2)
-  print(model)
   local classifier = nn.Sequential()
 
   classifier:add(nn.View(256*9*6))
