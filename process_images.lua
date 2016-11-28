@@ -38,7 +38,6 @@ for i = n_sit_images+n_stand_images+1, n_stand_images + n_sit_images + n_empty_i
   trainset.data[i] = empty_images[i-n_sit_images-n_stand_images]
   trainset.label[i] = 3
 end
-
 stand_images = nil
 sit_images = nil
 empty_images = nil
@@ -68,4 +67,7 @@ trainset.n_sit_images = 3670
 trainset.n_stand_images = 2910
 trainset.n_empty_images = 3005
 
+if paths.dir("data") == nil then
+  paths.mkdir("data")
+end
 torch.save("data/train.t7", trainset)
