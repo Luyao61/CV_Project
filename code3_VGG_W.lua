@@ -103,6 +103,8 @@ for epoch = 1,10 do
   end
   print(("epoch = %d; test mse = %.6f; Accuracy = %.3f"):format(epoch,f/test_size,correct_count/test_size))
 end
+torch.save("models/VGG19_W_epoch10.t7",model)
+
 --[[
 image.display(trainset.data[1])
 output = model:forward(trainset.normdata[1])
