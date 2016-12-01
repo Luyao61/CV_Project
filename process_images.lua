@@ -13,10 +13,9 @@ n_sit_images = 3670
 sit_images = load_images.load('sit', n_sit_images)
 n_stand_images = 2910
 stand_images = load_images.load('stand', n_stand_images)
-n_empty_images = 3005
+n_empty_images = 3605
 empty_images = load_images.load('empty', n_empty_images)
-train_size = 8600
-test_size = 985
+
 
 --
 
@@ -65,7 +64,7 @@ trainset.mean = mean
 trainset.std = std
 trainset.n_sit_images = 3670
 trainset.n_stand_images = 2910
-trainset.n_empty_images = 3005
+trainset.n_empty_images = 3605
 
 if paths.dir("data") == nil then
   paths.mkdir("data")
