@@ -3,6 +3,7 @@ require 'cunn'
 require 'cutorch'
 require 'cudnn'
 require 'optim'
+require 'image'
 torch.setdefaulttensortype('torch.FloatTensor')
 load_model = require 'load_model'
 
@@ -13,8 +14,8 @@ n_empty_images = trainset.n_empty_images
 n_stand_images = trainset.n_stand_images
 n_sit_images = trainset.n_sit_images
 
-train_size = 8600
-test_size = 985
+train_size = 8900
+test_size = 1285
 trainset.size = function() return trainset.n_empty_images+trainset.n_stand_images+trainset.n_sit_images end
 print("Loda image data... DONE")
 
@@ -36,8 +37,8 @@ criterion:cuda()
 parameters,gradParameters = model:getParameters()
 print("Loda AlexNET model... DONE")
 
+shuffle = torch.randperm(trainset:size())
 for epoch = 1,20 do
-  shuffle = torch.randperm(trainset:size())
   local f = 0
   local correct_count = 0
   model:training()
@@ -65,9 +66,7 @@ for epoch = 1,20 do
       --print(output)
       for i = 1, output:size(1) do
           local _, predicted_label = output[i]:max(1)
---[[            print (predicted_label[1])
-            print (targets[i])
-            print (" ")]]
+
           if predicted_label[1] == targets[i] then correct_count = correct_count + 1 end
       end
       local err = criterion:forward(output, targets)
@@ -101,7 +100,6 @@ for epoch = 1,20 do
         local _, predicted_label = output[i]:max(1)
         --print(i)
         if predicted_label[1] == targets[i] then correct_count = correct_count + 1 end
-        if(predicted_label[1] == 3) then print("good") end
     end
     local err = criterion:forward(output, targets)
     f = f + err

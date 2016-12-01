@@ -7,20 +7,22 @@ require 'optim'
 torch.setdefaulttensortype('torch.FloatTensor')
 
 -- load train set images
-trainset = torch.load('data/train.t7')
+trainset = torch.load('data/VGG_train.t7')
 n_empty_images = trainset.n_empty_images
 n_stand_images = trainset.n_stand_images
 n_sit_images = trainset.n_sit_images
 
-train_size = 8600
-test_size = 980
+train_size = 8900
+test_size = 1280
+
 trainset.size = function() return trainset.n_empty_images+trainset.n_stand_images+trainset.n_sit_images end
 print("Loda image data... DONE")
 
 local model = nn.Sequential()
 local features = nn.Sequential()
 local classifier = nn.Sequential()
-cfg = {64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M'}
+--cfg = {64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M'}
+cfg = {64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M'}
 do
   local iChannels = 3;
   for k,v in ipairs(cfg) do
@@ -63,8 +65,8 @@ model:cuda()
 parameters,gradParameters = model:getParameters()
 print("Build VGG model... DONE")
 
+shuffle = torch.randperm(trainset:size())
 for epoch = 1,10 do
-  shuffle = torch.randperm(trainset:size())
   local f = 0
   local correct_count = 0
   model:training()

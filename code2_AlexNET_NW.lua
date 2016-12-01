@@ -13,8 +13,8 @@ n_empty_images = trainset.n_empty_images
 n_stand_images = trainset.n_stand_images
 n_sit_images = trainset.n_sit_images
 
-train_size = 8600
-test_size = 985
+train_size = 8900
+test_size = 1285
 trainset.size = function() return trainset.n_empty_images+trainset.n_stand_images+trainset.n_sit_images end
 
 print("Loda image data... DONE")
@@ -68,8 +68,8 @@ model:cuda()
 parameters,gradParameters = model:getParameters()
 print("Build AlexNet model... DONE")
 
-for epoch = 1,2 do
-  shuffle = torch.randperm(trainset:size())
+shuffle = torch.randperm(trainset:size())
+for epoch = 1,20 do
   local f = 0
   local correct_count = 0
   model:training()
