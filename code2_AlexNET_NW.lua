@@ -139,10 +139,7 @@ for epoch = 1,20 do
   end
   print(("epoch = %d; test mse = %.6f; Accuracy = %.3f"):format(epoch,f/test_size,correct_count/test_size))
 end
---[[
-image.display(trainset.data[1])
-output = model:forward(trainset.normdata[1])
-print(output)]]
+torch.save("models/AlexNet_NW_epoch20.t7",model)
 
 test_temp = torch.CudaTensor(5,3,320,240)
 test_temp[1] = image.load("test_temp/empty110.jpg")
