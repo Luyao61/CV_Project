@@ -9,9 +9,10 @@ require 'optim'
 load_images = require 'load_images'
 torch.setdefaulttensortype('torch.FloatTensor')
 
-n_sit_images = 3670
+-- argumented dataset (this is the size for all "new" files)
+n_sit_images = 4930
 sit_images = load_images.load('sit', n_sit_images)
-n_stand_images = 2910
+n_stand_images = 4520
 stand_images = load_images.load('stand', n_stand_images)
 n_empty_images = 3605
 empty_images = load_images.load('empty', n_empty_images)
@@ -62,11 +63,11 @@ end
 trainset.data = nil
 trainset.mean = mean
 trainset.std = std
-trainset.n_sit_images = 3670
-trainset.n_stand_images = 2910
-trainset.n_empty_images = 3605
+trainset.n_sit_images = n_sit_images
+trainset.n_stand_images = n_stand_images
+trainset.n_empty_images = n_empty_images
 
 if paths.dir("data") == nil then
   paths.mkdir("data")
 end
-torch.save("data/train.t7", trainset)
+torch.save("data/train_new.t7", trainset)
