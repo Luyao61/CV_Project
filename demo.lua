@@ -17,7 +17,7 @@ require 'imgraph'
 require 'nnx'
 torch.setdefaulttensortype('torch.FloatTensor')
 
-local file = "P1010140"
+local file = "demo1"
 local video_path = "data/" .. file .. ".MP4"
 local image_width = 320
 local image_height = 240
@@ -55,7 +55,7 @@ for i = 1,3 do
   frames.normdata[{{},{i},{},{}}]:div(std[i])
 end
 
-model = torch.load("models/AlexNet_W_epoch20.t7")
+model = torch.load("models/VGG19_W_epoch30.t7")
 --[[temp = torch.CudaTensor(5,3,320,240):fill(1)
 output = model:forward(temp)
 local scores, classIds = output[1]:exp():sort(true)
@@ -77,6 +77,7 @@ for i = 1, frames:size(),batchSize do
   for j = 1, outputs:size(1) do
       --local _, predicted_label = outputs[j]:exp():sort(true)
       local scores, classIds = outputs[j]:exp():sort(true)
+      --print(outputs[j])
       --print(("Frames: %d; Predict Result: %s. "):format(i+j-1,classes[classIds[1]]))
       frames.data[i+j-1] = image.drawText(frames.data[i+j-1], classes[classIds[1]], 10, 10, {bg = {255, 255, 255}, size = 4})
   end
