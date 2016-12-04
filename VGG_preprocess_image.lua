@@ -8,9 +8,9 @@ require 'optim'
 require 'image'
 function main()
 
-    n_sit_images = 3670
-    n_stand_images = 2910
-    n_empty_images = 3605
+    n_sit_images = 3670 --4930
+    n_stand_images = 2910  --4520
+    n_empty_images = 3605  --3605
     h = 240
     w = 320
     --
