@@ -9,13 +9,13 @@ load_model = require 'load_model'
 
 
 -- load train set images
-trainset = torch.load('data/train.t7')
+trainset = torch.load('data/train_new.t7')
 n_empty_images = trainset.n_empty_images
 n_stand_images = trainset.n_stand_images
 n_sit_images = trainset.n_sit_images
 
-train_size = 8900
-test_size = 1285
+train_size = 11000
+test_size = 2055
 trainset.size = function() return trainset.n_empty_images+trainset.n_stand_images+trainset.n_sit_images end
 print("Loda image data... DONE")
 
@@ -106,7 +106,7 @@ for epoch = 1,20 do
   end
   print(("epoch = %d; test mse = %.6f; Accuracy = %.3f"):format(epoch,f/test_size,correct_count/test_size))
 end
-torch.save("models/AlexNet_W_epoch20.t7",model)
+torch.save("models/AlexNet_W_epoch20_new.t7",model)
 
 --[[
 image.display(trainset.data[1])

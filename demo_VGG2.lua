@@ -18,7 +18,7 @@ require 'nnx'
 --torch.setdefaulttensortype('torch.FloatTensor')
 
 function main()
-  local file = "test7"
+  local file = "test1"
   local video_path = "data/" .. file .. ".MP4"
   local image_width = 320
   local image_height = 240
@@ -49,7 +49,7 @@ function main()
     frames.normdata[i] = preprocess(frames.data[i]):float():clone()
   end
 
-  model = torch.load("models/VGG19_W_epoch30.t7")
+  model = torch.load("models/VGG19_W_epoch30_new.t7")
 
   if paths.dir("VGG19_Output/" .. file .. "/") == nil then
     paths.mkdir("VGG19_Output/" .. file .. "/")
