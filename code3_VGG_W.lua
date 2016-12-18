@@ -8,13 +8,13 @@ torch.setdefaulttensortype('torch.FloatTensor')
 load_model = require 'load_model'
 
 -- load train set images
-trainset = torch.load('data/VGG_train.t7')
+trainset = torch.load('data/VGG_train_new.t7')
 n_empty_images = trainset.n_empty_images
 n_stand_images = trainset.n_stand_images
 n_sit_images = trainset.n_sit_images
 
 train_size = 8900
-test_size = 1285
+test_size = 1280
 
 trainset.size = function() return trainset.n_empty_images+trainset.n_stand_images+trainset.n_sit_images end
 print("Loda image data... DONE")
@@ -34,7 +34,7 @@ criterion:cuda()
 print("Load VGG model... DONE")
 
 shuffle = torch.randperm(trainset:size())
-for epoch = 1,10 do
+for epoch = 1,30 do
   local f = 0
   local correct_count = 0
   model:training()
@@ -103,7 +103,7 @@ for epoch = 1,10 do
   end
   print(("epoch = %d; test mse = %.6f; Accuracy = %.3f"):format(epoch,f/test_size,correct_count/test_size))
 end
-torch.save("models/VGG19_W_epoch10.t7",model)
+torch.save("models/VGG19_W_epoch30_1070.t7",model)
 
 --[[
 image.display(trainset.data[1])
